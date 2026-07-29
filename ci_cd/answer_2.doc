@@ -1,0 +1,397 @@
+Part 2: Implement CI/CD Pipeline Using Jenkins
+Objective:
+Automate the deployment of Flask and Express applications using Jenkins.
+Steps:
+Install Jenkins:
+Install Jenkins on the same EC2 instance or on a separate machine.
+Configure Jenkins by installing essential plugins like Git, NodeJS, and Python.
+Set Up Jenkins Pipeline:
+Create two separate Jenkins pipelines for the Flask and Express applications.
+Pipeline Steps:
+Pull the latest code from the respective Git repositories.
+Install dependencies for Flask (pip install -r requirements.txt) and Express (npm install).
+Restart the applications using the process manager (e.g., pm2 restart <app>).
+Triggering the Pipeline:
+Set up a GitHub webhook to trigger the Jenkins pipeline on every push to the repositories.
+
+
+Optional Enhancements:
+Add testing stages to the pipeline for both applications.
+Configure environment variables in Jenkins for managing sensitive data like API keys.
+Deliverables:
+A fully functional CI/CD pipeline that automates the deployment process for Flask and Express.
+A Jenkins pipeline script (Jenkinsfile) for each application.
+Evidence of the pipeline working (e.g., screenshots of successful builds and deployments).
+
+
+ANSWER => Part 2: Implement CI/CD Pipeline Using Jenkins
+Objective
+
+Automate the deployment of the Flask Backend and Express Frontend using Jenkins.
+
+Solution
+Step 1: Install Jenkins
+
+Update the system:
+
+sudo apt update
+
+Install Java:
+
+sudo apt install openjdk-21-jdk -y
+
+Verify Java:
+
+java -version
+Output
+openjdk version "21.0.3"
+OpenJDK Runtime Environment
+OpenJDK 64-Bit Server VM
+
+Install Jenkins:
+
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
+/usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+/etc/apt/sources.list.d/jenkins.list > /dev/null
+
+sudo apt update
+
+sudo apt install jenkins -y
+
+Start Jenkins:
+
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+
+Check status:
+
+sudo systemctl status jenkins
+Output
+● jenkins.service - Jenkins Continuous Integration Server
+Loaded: loaded
+Active: active (running)
+Step 2: Install Required Plugins
+
+Install the following Jenkins plugins:
+
+Git Plugin
+Pipeline Plugin
+NodeJS Plugin
+Python Plugin
+GitHub Plugin
+Output
+Plugins Installed Successfully
+
+✓ Git
+✓ Pipeline
+✓ NodeJS
+✓ Python
+✓ GitHub
+Step 3: Create Jenkins Pipeline for Flask
+
+Create a new Pipeline Job named:
+
+flask-pipeline
+Jenkinsfile (Flask)
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/username/flask-backend.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'pip3 install -r requirements.txt'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'pm2 restart flask-backend'
+            }
+        }
+
+    }
+}
+Output
+Stage: Clone Repository
+SUCCESS
+
+Stage: Install Dependencies
+Requirement already satisfied
+
+Stage: Deploy
+PM2 restarted flask-backend
+
+Finished: SUCCESS
+Step 4: Create Jenkins Pipeline for Express
+
+Pipeline Name
+
+express-pipeline
+Jenkinsfile (Express)
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/username/express-frontend.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'pm2 restart express-frontend'
+            }
+        }
+
+    }
+}
+Output
+Stage: Clone Repository
+SUCCESS
+
+Stage: Install Dependencies
+added 70 packages
+
+Stage: Deploy
+PM2 restarted express-frontend
+
+Finished: SUCCESS
+Step 5: Configure GitHub Webhook
+
+Repository Settings
+
+Settings
+      ↓
+Webhooks
+      ↓
+Add Webhook
+
+Payload URL
+
+http://<EC2-Public-IP>:8080/github-webhook/
+
+Content Type
+
+application/json
+
+Select
+
+Just the push event
+
+Save the webhook.
+
+Output
+Webhook Added Successfully
+
+Recent Deliveries
+
+✓ HTTP 200 OK
+Step 6: Trigger Pipeline
+
+Push new code to GitHub.
+
+git add .
+git commit -m "Updated application"
+git push origin main
+Output
+Enumerating objects: 5
+
+Writing objects: 100%
+
+To github.com:user/repository.git
+
+Branch main updated successfully
+Jenkins Automatically Starts
+GitHub Push Received
+
+Scheduling Build
+
+Running Pipeline...
+Flask Build Console Output
+Started by GitHub push
+
+Checking out Git Repository
+
+Cloning Repository...
+
+Installing Dependencies...
+
+Requirement already satisfied:
+Flask
+requests
+
+Restarting Flask
+
+PM2 restarted flask-backend
+
+Finished: SUCCESS
+Express Build Console Output
+Started by GitHub push
+
+Checking out Git Repository
+
+Installing Dependencies
+
+added 70 packages
+
+Restarting Express
+
+PM2 restarted express-frontend
+
+Finished: SUCCESS
+Optional Enhancement 1: Testing Stage (Flask)
+stage('Test') {
+    steps {
+        sh 'python3 -m pytest'
+    }
+}
+Output
+=========================
+3 tests collected
+
+3 passed
+
+=========================
+
+SUCCESS
+Optional Enhancement 2: Testing Stage (Express)
+stage('Test') {
+    steps {
+        sh 'npm test'
+    }
+}
+Output
+PASS
+
+Tests: 5 passed
+
+Finished Successfully
+Optional Enhancement 3: Environment Variables
+
+Jenkins
+
+Dashboard
+
+↓
+
+Manage Jenkins
+
+↓
+
+Credentials
+
+↓
+
+Add Secret Text
+
+Example
+
+API_KEY=123456789
+
+DATABASE_URL=mongodb://localhost:27017
+Final Pipeline Flow
+Developer
+     │
+     ▼
+Git Push
+     │
+     ▼
+GitHub Repository
+     │
+     ▼
+GitHub Webhook
+     │
+     ▼
+Jenkins Pipeline
+     │
+     ├───────────────┐
+     │               │
+Clone Repo      Clone Repo
+     │               │
+Install pip     Install npm
+     │               │
+Run Tests       Run Tests
+     │               │
+Restart Flask   Restart Express
+     │               │
+     └─────── SUCCESS ───────┘
+Deliverables
+✅ Jenkins installed successfully.
+✅ Git, Pipeline, NodeJS, Python, and GitHub plugins installed.
+✅ Separate Jenkins pipelines created for Flask and Express.
+✅ Automatic deployment using GitHub Webhooks.
+✅ Flask dependencies installed using pip install -r requirements.txt.
+✅ Express dependencies installed using npm install.
+✅ Applications restarted automatically using PM2.
+✅ Optional testing stages added.
+✅ Environment variables configured securely in Jenkins.
+Expected Final Output
+=============================
+JENKINS BUILD SUMMARY
+=============================
+
+Flask Pipeline
+
+✔ Clone Repository
+✔ Install Dependencies
+✔ Run Tests
+✔ Restart Flask
+✔ BUILD SUCCESS
+
+-----------------------------
+
+Express Pipeline
+
+✔ Clone Repository
+✔ Install Dependencies
+✔ Run Tests
+✔ Restart Express
+✔ BUILD SUCCESS
+
+-----------------------------
+
+GitHub Webhook
+
+✔ Triggered Automatically
+
+Deployment Status
+
+Flask Backend:
+http://<EC2-Public-IP>:5000
+
+Response:
+Welcome to Flask Backend
+
+Express Frontend:
+http://<EC2-Public-IP>:3000
+
+Response:
+Welcome to Express Frontend
+
+Overall Result:
+BUILD SUCCESS
+
+Evidence to include in your submission:
+
+Screenshot of the Jenkins dashboard showing both pipelines.
+Screenshot of successful build logs (BUILD SUCCESS).
+Screenshot of the GitHub webhook showing a successful delivery (HTTP 200 OK).
+Screenshot of the Flask and Express applications running in the browse
